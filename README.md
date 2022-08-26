@@ -36,7 +36,7 @@ The Kuzzle PaaS application name to update (default: `api`)
 ### Login and get access to our licensed products (for functional test purposes for example):
 
 ```yaml
-uses: kuzzleio/paas-actions@latest
+uses: kuzzleio/paas-action@v0.4.0
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -46,7 +46,7 @@ with:
 ### Deploy a new version of your application on your Kuzzle PaaS environment:
 
 ```yaml
-uses: kuzzleio/paas-actions@latest
+uses: kuzzleio/paas-action@0.4.0
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
