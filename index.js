@@ -115,9 +115,14 @@ class Action {
     try {
       console.log(`Attempting to deploy '${this.inputs.image}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
       const response = await fetch(
-        `${this.inputs.paas_api}/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.image}/_deploy`,
+        `${this.inputs.paas_api}/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
         options);
-      console.log(JSON.stringify(await response.json()));
+      const result = await response.json();
+
+      if (result.status !== 200) {
+        throw new Error(`Deployment fail!: ${result.error.message}`);
+      }
+
       console.log('Deployment succeeded!');
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
