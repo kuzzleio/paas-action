@@ -18,6 +18,7 @@ class Action {
   }
 
   async run() {
+    console.log(`Current directory:${process.env.GITHUB_WORKSPACE}`);
     await this.login();
 
     if (!this.inputs.login_only) {
