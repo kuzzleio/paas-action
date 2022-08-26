@@ -114,9 +114,10 @@ class Action {
 
     try {
       console.log(`Attempting to deploy '${this.inputs.image}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
-      await fetch(
+      const response = await fetch(
         `${this.inputs.paas_api}/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.image}/_deploy`,
         options);
+      console.log(JSON.stringify(response));
       console.log('Deployment succeeded!');
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
