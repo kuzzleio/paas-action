@@ -117,7 +117,7 @@ class Action {
       const response = await fetch(
         `${this.inputs.paas_api}/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.image}/_deploy`,
         options);
-      console.log(JSON.stringify(response));
+      console.log(JSON.stringify(await response.json()));
       console.log('Deployment succeeded!');
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
