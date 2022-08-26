@@ -25,6 +25,9 @@ inputs:
     description: "If true, will only perform a login action to the Kuzzle PaaS API and the private NPM registry"
     required: false
     default: "false"
+  npmrc_output_dir:
+    description: "Where to save the produced .npmrc file when login (default: Project root directory)"
+    required: false
   paas_api:
     description: "Kuzzle PaaS API server to target (for Kuzzle Team internal use only)"
     required: false

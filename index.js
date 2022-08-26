@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import fs from 'fs';
 import { spawnSync } from "child_process";
 import fetch from 'node-fetch';
 
@@ -13,12 +14,12 @@ class Action {
       application: core.getInput('application', { required: false, ...trim }),
       image: core.getInput('image', { required: false, ...trim }),
       login_only: core.getBooleanInput('login_only', { required: false, ...trim }),
+      npmrc_output_dir: core.getInput('npmrc_output_dir', { required: false, ...trim }),
       paas_api: core.getInput('paas_api', { required: false, ...trim })
     };
   }
 
   async run() {
-    console.log(`Current directory:${process.env.GITHUB_WORKSPACE}`);
     await this.login();
 
     if (!this.inputs.login_only) {
@@ -87,8 +88,8 @@ class Action {
       const response = await fetch(`https://packages.paas.kuzzle.io/-/user/org.couchdb.user:${username}`, options);
       const { token } = await response.json();
 
-      spawnSync('npm', ['config', 'set', '@kuzzleio:registry', 'https://packages.paas.kuzzle.io'], { stdio: 'inherit' });
-      spawnSync('npm', ['set', '//packages.paas.kuzzle.io/:_authToken', token], { stdio: 'inherit' });
+      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, "@kuzzleio:registry=https://packages.paas.kuzzle.io");
+      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//packages.paas.kuzzle.io/:_authToken=${token}`);
     } catch (error) {
       throw new Error(`Cannot login to the Kuzzle PaaS private NPM registry: ${error}`)
     }

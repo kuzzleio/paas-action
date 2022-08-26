@@ -14,6 +14,10 @@ This action allows you to:
 
 **Required** Your Kuzzle PaaS password.
 
+## `npmrc_output_dir`
+
+Where to save the produced .npmrc file when login (default: Project root directory)
+
 ## `project`
 
 **Required** Your Kuzzle PaaS project name (not required if `login_only` is set to `true`)
@@ -41,6 +45,8 @@ with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
   login_only: "true"
+  # You can also choose where to save the produced .npmrc
+  npmrc_output_dir: ./backend
 ```
 
 ### Deploy a new version of your application on your Kuzzle PaaS environment:
