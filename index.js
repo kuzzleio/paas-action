@@ -115,7 +115,7 @@ class Action {
     try {
       console.log(`Attempting to deploy '${this.inputs.image}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
       const response = await fetch(
-        `${this.inputs.paas_api}/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
+        `${this.inputs.paas_api}/projects/${this.inputs.project.replace("paas-project-", "")}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
         options);
       const result = await response.json();
 
