@@ -1,0 +1,35 @@
+name: "Kuzzle PaaS actions"
+description: "Login and deploy to the Kuzzle PaaS"
+inputs:
+  username:
+    description: "Kuzzle PaaS username"
+    required: true
+  password:
+    description: "Kuzzle PaaS password"
+    required: true
+  project:
+    description: "Kuzzle PaaS project name"
+    required: false
+  environment:
+    description: "Kuzzle PaaS environment name"
+    required: false
+    default: main
+  application:
+    description: "Kuzzle PaaS application name to update"
+    required: false
+    default: "api"
+  image:
+    description: "The Docker image name to use to update the Kuzzle PaaS application"
+    required: false
+  login_only:
+    description: "If true, will only perform a login action to the Kuzzle PaaS API and the private NPM registry"
+    required: false
+    default: "false"
+  paas_api:
+    description: "Kuzzle PaaS API server to target (for Kuzzle Team internal use only)"
+    required: false
+    default: https://api.paas.kuzzle.io
+
+runs:
+  using: "node16"
+  main: "dist/index.js"
