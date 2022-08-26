@@ -28,7 +28,7 @@ inputs:
   paas_api:
     description: "Kuzzle PaaS API server to target (for Kuzzle Team internal use only)"
     required: false
-    default: https://api.paas.kuzzle.io
+    default: https://console.paas.kuzzle.io
 
 runs:
   using: "node16"
