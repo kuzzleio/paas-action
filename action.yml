@@ -32,6 +32,14 @@ inputs:
     description: "Kuzzle PaaS API server to target (for Kuzzle Team internal use only)"
     required: false
     default: https://console.paas.kuzzle.io
+  rollback:
+    description: "Enable Rollback action if deployed application error"
+    required: false
+    default: "false"
+  timeout:
+    description: "Time limit in second before considere the deployment a failure"
+    required: false
+    default: "60"
 
 runs:
   using: "node16"

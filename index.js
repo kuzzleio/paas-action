@@ -1,7 +1,10 @@
 import * as core from '@actions/core';
 import fs from 'fs';
-import { spawnSync } from "child_process";
 import fetch from 'node-fetch';
+
+function sleep(s) {
+  return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
 
 class Action {
   constructor() {
@@ -15,33 +18,57 @@ class Action {
       image: core.getInput('image', { required: false, ...trim }),
       login_only: core.getBooleanInput('login_only', { required: false, ...trim }),
       npmrc_output_dir: core.getInput('npmrc_output_dir', { required: false, ...trim }),
-      paas_api: core.getInput('paas_api', { required: false, ...trim })
+      paas_api: core.getInput('paas_api', { required: false, ...trim }),
+      rollback: core.getBooleanInput('rollback', { required: false, ...trim }),
+      timeout: parseInt(core.getInput('timeout', { required: false, ...trim }))
     };
+  }
+
+  async waitForApplication() {
+    let status = undefined;
+    let tryCount = 0;
+    while (status !== 'Healthy' || tryCount < this.inputs.timeout) {
+      const currentAppInfo = await this.getApplicationInfo();
+      status = currentAppInfo.status;
+      tryCount++;
+
+      await sleep(1);
+    }
+
+    if (tryCount === this.inputs.timeout) {
+      throw new Error(`Deployment failed for application ${this.inputs.application}: Timeout`);
+    }
+
+    return status;
   }
 
   async run() {
     await this.login();
 
-    if (!this.inputs.login_only) {
-      if (!this.inputs.image) {
-        throw new Error(`You're attempting to deploy but you didn't provide a Docker image name to do so.`)
+    if (this.inputs.login_only) {
+      return;
+    }
+
+    if (!this.inputs.image) {
+      throw new Error(`You're attempting to deploy but you didn't provide a Docker image name to do so.`)
+    }
+
+    if (!this.inputs.project) {
+      throw new Error(`Project name required for deployment operations.`)
+    }
+
+    const previousAppInfo = await this.getApplicationInfo();
+
+    await this.deploy();
+
+    const status = await this.waitForApplication();
+
+    if (status !== 'Healthy') {
+      if (!this.inputs.rollback) {
+        throw new Error(`Application deployment errored with final status ${status}`);
       }
 
-      if (!this.inputs.project) {
-        throw new Error(`Project name required for deployment operations.`)
-      }
-
-      await this.deploy();
-
-      /**
-       * @TODO Perform a rollback if deployment fails or if the deployed 
-       * application entered in a error state.
-       * @TODO Make the deployment to wait for the new application to be
-       * up and running without errors
-       * @NOTE To do so we need to rework the rollback PaaS API action 
-       * to make it able to rollback by default to the previous version
-       * and a dedicated API action to get current application health state
-       */
+      await this.deploy({ tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag });
     }
   }
 
@@ -86,8 +113,13 @@ class Action {
       };
 
       const response = await fetch(`https://packages.paas.kuzzle.io/-/user/org.couchdb.user:${username}`, options);
-      const { token } = await response.json();
+      const json = await response.json();
 
+      if (json.status !== 200) {
+        throw new Error(json.error.message);
+      }
+
+      const { token } = json;
       fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, "@kuzzleio:registry=https://packages.paas.kuzzle.io\n");
       fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//packages.paas.kuzzle.io/:_authToken=${token}\n`);
     } catch (error) {
@@ -95,8 +127,12 @@ class Action {
     }
   }
 
-  async deploy() {
-    const [name, tag] = this.inputs.image.split(':');
+  async deploy(overrides = {}) {
+    let [name, tag] = this.inputs.image.split(':');
+
+    if (overrides.tag) {
+      tag = overrides.tag;
+    }
 
     const options = {
       method: 'POST',
@@ -117,15 +153,40 @@ class Action {
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
         options);
-      const result = await response.json();
+      const json = await response.json();
 
-      if (result.status !== 200) {
-        throw new Error(`Deployment fail!: ${result.error.message}`);
+      if (json.status !== 200) {
+        throw new Error(json.error.message);
       }
 
       console.log('Deployment succeeded!');
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
+    }
+  }
+
+  async getApplicationInfo() {
+    const options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.jwt}`
+      },
+    };
+
+    try {
+      const response = await fetch(
+        `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}`,
+        options);
+      const json = await response.json();
+
+      if (json.status !== 200) {
+        throw new Error(json.error.message);
+      }
+
+      return json.result;
+    } catch (error) {
+      throw new Error(`Failed to fetch '${this.inputs.application}' application information: ${error}`);
     }
   }
 }
