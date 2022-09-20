@@ -115,15 +115,15 @@ class Action {
       const response = await fetch(`https://packages.paas.kuzzle.io/-/user/org.couchdb.user:${username}`, options);
       const json = await response.json();
 
-      if (json.status !== 201) {
-        throw new Error(JSON.stringify(json));
+      if (response.status !== 201) {
+        throw new Error(json.error);
       }
 
       const { token } = json;
       fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, "@kuzzleio:registry=https://packages.paas.kuzzle.io\n");
       fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//packages.paas.kuzzle.io/:_authToken=${token}\n`);
     } catch (error) {
-      throw new Error(`Cannot login to the Kuzzle PaaS private NPM registry: ${JSON.stringify(error)}`)
+      throw new Error(`Cannot login to the Kuzzle PaaS private NPM registry: ${error}`)
     }
   }
 
