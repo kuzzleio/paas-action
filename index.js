@@ -115,8 +115,8 @@ class Action {
       const response = await fetch(`https://packages.paas.kuzzle.io/-/user/org.couchdb.user:${username}`, options);
       const json = await response.json();
 
-      if (json.status !== 200) {
-        throw new Error(json.error.message);
+      if (json.status !== 201) {
+        throw new Error(json);
       }
 
       const { token } = json;
