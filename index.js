@@ -27,7 +27,7 @@ class Action {
   async waitForApplication() {
     let status = undefined;
     let tryCount = 0;
-    while (status !== 'Healthy' || tryCount < this.inputs.timeout) {
+    while (status !== 'Healthy' && tryCount < this.inputs.timeout) {
       const currentAppInfo = await this.getApplicationInfo();
       status = currentAppInfo.status;
       tryCount++;
