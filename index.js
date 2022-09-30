@@ -61,6 +61,8 @@ class Action {
 
     await this.deploy();
 
+    await sleep(10); // Wait 10 seconds to let Argo init the deployment process
+
     const status = await this.waitForApplication();
 
     if (status !== 'Healthy') {
@@ -70,6 +72,8 @@ class Action {
 
       await this.deploy({ tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag });
     }
+
+    console.log('Deployment succeeded!');
   }
 
   async login() {
@@ -159,7 +163,6 @@ class Action {
         throw new Error(json.error.message);
       }
 
-      console.log('Deployment succeeded!');
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
     }
