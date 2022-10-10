@@ -25,10 +25,11 @@ class Action {
   }
 
   async waitForApplication() {
-    let status = undefined;
+    let status = 'Processing';
     let tryCount = 0;
     while (status !== 'Healthy' && tryCount < this.inputs.timeout) {
       const currentAppInfo = await this.getApplicationInfo();
+      console.log(currentAppInfo.status)
       status = currentAppInfo.status;
       tryCount++;
 
@@ -36,8 +37,9 @@ class Action {
     }
 
     if (tryCount === this.inputs.timeout) {
-      throw new Error(`Deployment failed for application ${this.inputs.application}: Timeout`);
+      throw new Error(`Deployment failed for application ${this.inputs.application}: Timeout. Current application status: ${status}`);
     }
+
 
     return status;
   }
@@ -61,7 +63,7 @@ class Action {
 
     await this.deploy();
 
-    await sleep(10); // Wait 10 seconds to let Argo init the deployment process
+    await sleep(3); // Wait 10 seconds to let Argo the time to init the deployment process
 
     const status = await this.waitForApplication();
 
