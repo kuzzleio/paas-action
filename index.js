@@ -29,7 +29,6 @@ class Action {
     let tryCount = 0;
     while (status !== 'Healthy' && tryCount < this.inputs.timeout) {
       const currentAppInfo = await this.getApplicationInfo();
-      console.log(currentAppInfo.status)
       status = currentAppInfo.status;
       tryCount++;
 
@@ -65,17 +64,23 @@ class Action {
 
     await sleep(3); // Wait 10 seconds to let Argo the time to init the deployment process
 
-    const status = await this.waitForApplication();
-
-    if (status !== 'Healthy') {
+    let status = undefined;
+    try {
+      status = await this.waitForApplication();
+      console.log('Deployment succeeded!');
+    } catch (error) {
+      console.log('Deployment failed')
       if (!this.inputs.rollback) {
         throw new Error(`Application deployment errored with final status ${status}`);
       }
+      console.log(`Rolling back to image ${previousAppInfo.spec.source.helm.values.kuzzle.image.name}:${previousAppInfo.spec.source.helm.values.kuzzle.image.tag}`);
 
       await this.deploy({ tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag });
-    }
 
-    console.log('Deployment succeeded!');
+      status = await this.waitForApplication();
+
+      process.exit(1); // To make the Github Action job mark as failed for Github
+    }
   }
 
   async login() {
