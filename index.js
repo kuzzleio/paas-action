@@ -79,6 +79,8 @@ class Action {
 
       status = await this.waitForApplication();
 
+      console.log('Rollback successful! 🥵')
+
       process.exit(1); // To make the Github Action job mark as failed for Github
     }
   }
@@ -160,7 +162,7 @@ class Action {
     };
 
     try {
-      console.log(`Attempting to deploy '${this.inputs.image}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
+      console.log(`Attempting to deploy '${name}:${tag}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
         options);
