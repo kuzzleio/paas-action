@@ -69,7 +69,10 @@ class Action {
       status = await this.waitForApplication();
       console.log('Deployment succeeded!');
     } catch (error) {
-      console.log('Deployment failed')
+      console.log('Deployment failed with the following error:\n');
+      const logs = await this.getApplicationLogs();
+      console.log(logs);
+
       if (!this.inputs.rollback) {
         throw new Error(`Application deployment errored with final status ${status}`);
       }
@@ -199,6 +202,31 @@ class Action {
       return json.result;
     } catch (error) {
       throw new Error(`Failed to fetch '${this.inputs.application}' application information: ${error}`);
+    }
+  }
+
+  async getApplicationLogs() {
+    const options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.jwt}`
+      },
+    };
+
+    try {
+      const response = await fetch(
+        `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_logs`,
+        options);
+      const json = await response.json();
+
+      if (json.status !== 200) {
+        throw new Error(json.error.message);
+      }
+
+      return json.result.join('\n');
+    } catch (error) {
+      throw new Error(`Failed to fetch '${this.inputs.application}' application logs: ${error}`);
     }
   }
 }
