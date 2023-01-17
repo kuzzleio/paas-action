@@ -104,9 +104,13 @@ class Action {
         }),
         headers: { 'Content-Type': 'application/json' }
       });
+      const json = await response.json();
 
-      const { result } = await response.json();
+      if (response.status !== 200) {
+        throw new Error(json.error);
+      }
 
+      const { result } = json;
       this.jwt = result.jwt;
     } catch (error) {
       throw new Error(`Cannot login to the Kuzzle PaaS services: ${error}`);
