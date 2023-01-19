@@ -19,6 +19,7 @@ class Action {
       login_only: core.getBooleanInput('login_only', { required: false, ...trim }),
       npmrc_output_dir: core.getInput('npmrc_output_dir', { required: false, ...trim }),
       paas_api: core.getInput('paas_api', { required: false, ...trim }),
+      paas_packages: core.getInput('paas_packages', { required: false, ...trim }),
       rollback: core.getBooleanInput('rollback', { required: false, ...trim }),
       timeout: parseInt(core.getInput('timeout', { required: false, ...trim }))
     };
@@ -103,9 +104,13 @@ class Action {
         }),
         headers: { 'Content-Type': 'application/json' }
       });
+      const json = await response.json();
 
-      const { result } = await response.json();
+      if (response.status !== 200) {
+        throw new Error(json.error);
+      }
 
+      const { result } = json;
       this.jwt = result.jwt;
     } catch (error) {
       throw new Error(`Cannot login to the Kuzzle PaaS services: ${error}`);
@@ -128,7 +133,7 @@ class Action {
         })
       };
 
-      const response = await fetch(`https://packages.paas.kuzzle.io/-/user/org.couchdb.user:${username}`, options);
+      const response = await fetch(`https://${this.inputs.paas_packages}/-/user/org.couchdb.user:${username}`, options);
       const json = await response.json();
 
       if (response.status !== 201) {
@@ -136,8 +141,8 @@ class Action {
       }
 
       const { token } = json;
-      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, "@kuzzleio:registry=https://packages.paas.kuzzle.io\n");
-      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//packages.paas.kuzzle.io/:_authToken=${token}\n`);
+      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `@kuzzleio:registry=https://${this.inputs.paas_packages}\n`);
+      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//${this.inputs.paas_packages}/:_authToken=${token}\n`);
     } catch (error) {
       throw new Error(`Cannot login to the Kuzzle PaaS private NPM registry: ${error}`)
     }

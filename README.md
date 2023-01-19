@@ -49,7 +49,7 @@ Allows you to perform a rollback to the previous live version of the targeted ap
 ### Login and get access to our licensed products (for functional test purposes for example):
 
 ```yaml
-uses: kuzzleio/paas-action@vv0.6.0
+uses: kuzzleio/paas-action@v0.7.0
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -61,7 +61,7 @@ with:
 ### Deploy a new version of your application on your Kuzzle PaaS environment:
 
 ```yaml
-uses: kuzzleio/paas-action@v0.6.0
+uses: kuzzleio/paas-action@v0.7.0
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -77,7 +77,7 @@ with:
 > NOTE: It will rollback to the previous live version of the targeted application.
 
 ```yaml
-uses: kuzzleio/paas-action@v0.6.0
+uses: kuzzleio/paas-action@v0.7.0
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
