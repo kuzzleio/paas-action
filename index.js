@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import fs from 'fs';
 import fetch from 'node-fetch';
+import chalk from 'chalk';
 
 function sleep(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
@@ -72,7 +73,7 @@ class Action {
     } catch (error) {
       console.log('Deployment failed with the following error:\n');
       const logs = await this.getApplicationLogs();
-      console.log(logs);
+      logs.forEach(log => console.log(log));
 
       if (!this.inputs.rollback) {
         throw new Error(`Application deployment errored with final status ${status}`);
@@ -223,9 +224,35 @@ class Action {
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_logs`,
         options);
-      const logs = await response.text();
+      const rawLogs = await response.text();
 
-      return logs;
+    // Extract different podName value from logs
+    const jsonLogs = rawLogs.split('\n')
+    .filter((log) => log.trim() !== '')
+    .map((log) => JSON.parse(log))
+    .filter((log) => log.podName.length > 0);
+
+    const podColors = {};
+    jsonLogs
+      .map((log) => log.podName)
+      .filter((podName, index, self) => self.indexOf(podName) === index)
+      .forEach((podName, index) => {
+      const colors = [
+        chalk.red,
+        chalk.green,
+        chalk.yellow,
+        chalk.blue,
+        chalk.magenta,
+        chalk.cyan,
+      ];
+
+      podColors[podName] = colors[index];
+    });
+
+    return jsonLogs
+      .map((log) => {
+        return `[${chalk.italic.yellow(log.timeStamp)}] (${podColors[log.podName](log.podName)}) ${log.content}`;
+      });
     } catch (error) {
       throw new Error(`Failed to fetch '${this.inputs.application}' application logs: ${error}`);
     }
