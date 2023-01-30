@@ -223,13 +223,9 @@ class Action {
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_logs`,
         options);
-      const json = await response.json();
+      const logs = await response.text();
 
-      if (json.status !== 200) {
-        throw new Error(json.error.message);
-      }
-
-      return json.result.join('\n');
+      return logs;
     } catch (error) {
       throw new Error(`Failed to fetch '${this.inputs.application}' application logs: ${error}`);
     }
