@@ -276,7 +276,7 @@ class Action {
         },
       });
 
-      console.log(body);
+      console.log(response);
       const json = await response.json();
 
       return json;
