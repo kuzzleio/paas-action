@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-import * as core from '@actions/core';
-import fs from 'fs';
-import fetch from 'node-fetch';
-import chalk from 'chalk';
-=======
 import * as core from "@actions/core";
 import fs from "fs";
 import fetch from "node-fetch";
->>>>>>> develop
 
 function sleep(s) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000));
