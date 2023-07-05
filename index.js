@@ -284,6 +284,8 @@ class Action {
       while (!isDone) {
         const { value, done } = await reader.read();
 
+        console.log(value, done);
+
         const chunk = new TextDecoder("utf-8").decode(value);
 
         streamLines.push(...chunk.split("\n"));
@@ -300,6 +302,8 @@ class Action {
 
         result += `${parsed.podName} | ${parsed.content} \n`;
       }
+
+      return result;
     } catch (error) {
       throw new Error(
         `Failed to fetch '${this.inputs.application}' application logs: ${error}`
