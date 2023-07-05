@@ -281,6 +281,10 @@ class Action {
       let isDone = false;
       const streamLines = [];
 
+      setTimeout(() => {
+        isDone = true;
+      }, 10000);
+
       while (!isDone) {
         const { value, done } = await reader.read();
 
@@ -299,6 +303,8 @@ class Action {
 
       for (const streamLine of streamLines.filter(Boolean)) {
         const parsed = JSON.parse(streamLine);
+
+        console.log("parsed", parsed);
 
         result += `${parsed.podName} | ${parsed.content} \n`;
       }
