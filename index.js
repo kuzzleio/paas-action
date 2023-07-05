@@ -1,34 +1,46 @@
-import * as core from '@actions/core';
-import fs from 'fs';
-import fetch from 'node-fetch';
+import * as core from "@actions/core";
+import fs from "fs";
+import fetch from "node-fetch";
 
 function sleep(s) {
-  return new Promise(resolve => setTimeout(resolve, s * 1000));
+  return new Promise((resolve) => setTimeout(resolve, s * 1000));
 }
 
 class Action {
   constructor() {
     const trim = { trimWhitespace: true };
     this.inputs = {
-      username: core.getInput('username', { required: true, ...trim }),
-      password: core.getInput('password', { required: true, ...trim }),
-      project: `paas-project-${core.getInput('project', { required: false, ...trim })}`,
-      environment: core.getInput('environment', { required: false, ...trim }),
-      application: core.getInput('application', { required: false, ...trim }),
-      image: core.getInput('image', { required: false, ...trim }),
-      login_only: core.getBooleanInput('login_only', { required: false, ...trim }),
-      npmrc_output_dir: core.getInput('npmrc_output_dir', { required: false, ...trim }),
-      paas_api: core.getInput('paas_api', { required: false, ...trim }),
-      paas_packages: core.getInput('paas_packages', { required: false, ...trim }),
-      rollback: core.getBooleanInput('rollback', { required: false, ...trim }),
-      timeout: parseInt(core.getInput('timeout', { required: false, ...trim }))
+      username: core.getInput("username", { required: true, ...trim }),
+      password: core.getInput("password", { required: true, ...trim }),
+      project: `paas-project-${core.getInput("project", {
+        required: false,
+        ...trim,
+      })}`,
+      environment: core.getInput("environment", { required: false, ...trim }),
+      application: core.getInput("application", { required: false, ...trim }),
+      image: core.getInput("image", { required: false, ...trim }),
+      login_only: core.getBooleanInput("login_only", {
+        required: false,
+        ...trim,
+      }),
+      npmrc_output_dir: core.getInput("npmrc_output_dir", {
+        required: false,
+        ...trim,
+      }),
+      paas_api: core.getInput("paas_api", { required: false, ...trim }),
+      paas_packages: core.getInput("paas_packages", {
+        required: false,
+        ...trim,
+      }),
+      rollback: core.getBooleanInput("rollback", { required: false, ...trim }),
+      timeout: parseInt(core.getInput("timeout", { required: false, ...trim })),
     };
   }
 
   async waitForApplication() {
-    let status = 'Processing';
+    let status = "Processing";
     let tryCount = 0;
-    while (status !== 'Healthy' && tryCount < this.inputs.timeout) {
+    while (status !== "Healthy" && tryCount < this.inputs.timeout) {
       const currentAppInfo = await this.getApplicationInfo();
       status = currentAppInfo.status;
       tryCount++;
@@ -37,9 +49,10 @@ class Action {
     }
 
     if (tryCount === this.inputs.timeout) {
-      throw new Error(`Deployment failed for application ${this.inputs.application}: Timeout. Current application status: ${status}`);
+      throw new Error(
+        `Deployment failed for application ${this.inputs.application}: Timeout. Current application status: ${status}`
+      );
     }
-
 
     return status;
   }
@@ -52,11 +65,13 @@ class Action {
     }
 
     if (!this.inputs.image) {
-      throw new Error(`You're attempting to deploy but you didn't provide a Docker image name to do so.`)
+      throw new Error(
+        `You're attempting to deploy but you didn't provide a Docker image name to do so.`
+      );
     }
 
     if (!this.inputs.project) {
-      throw new Error(`Project name required for deployment operations.`)
+      throw new Error(`Project name required for deployment operations.`);
     }
 
     const previousAppInfo = await this.getApplicationInfo();
@@ -68,22 +83,28 @@ class Action {
     let status = undefined;
     try {
       status = await this.waitForApplication();
-      console.log('Deployment succeeded!');
+      console.log("Deployment succeeded!");
     } catch (error) {
-      console.log('Deployment failed with the following error:\n');
+      console.log("Deployment failed with the following error:\n");
       const logs = await this.getApplicationLogs();
       console.log(logs);
 
       if (!this.inputs.rollback) {
-        throw new Error(`Application deployment errored with final status ${status}`);
+        throw new Error(
+          `Application deployment errored with final status ${status}`
+        );
       }
-      console.log(`Rolling back to image ${previousAppInfo.spec.source.helm.values.kuzzle.image.name}:${previousAppInfo.spec.source.helm.values.kuzzle.image.tag}`);
+      console.log(
+        `Rolling back to image ${previousAppInfo.spec.source.helm.values.kuzzle.image.name}:${previousAppInfo.spec.source.helm.values.kuzzle.image.tag}`
+      );
 
-      await this.deploy({ tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag });
+      await this.deploy({
+        tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag,
+      });
 
       status = await this.waitForApplication();
 
-      console.log('Rollback successful! 🥵')
+      console.log("Rollback successful! 🥵");
 
       process.exit(1); // To make the Github Action job mark as failed for Github
     }
@@ -97,12 +118,12 @@ class Action {
      */
     try {
       const response = await fetch(`${this.inputs.paas_api}/_login/local`, {
-        method: 'post',
+        method: "post",
         body: JSON.stringify({
           username,
-          password
+          password,
         }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
       const json = await response.json();
 
@@ -121,19 +142,24 @@ class Action {
      */
     try {
       const options = {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Basic ${Buffer.from(
+            `${username}:${password}`
+          ).toString("base64")}`,
         },
         body: JSON.stringify({
           name: username,
           password,
-        })
+        }),
       };
 
-      const response = await fetch(`https://${this.inputs.paas_packages}/-/user/org.couchdb.user:${username}`, options);
+      const response = await fetch(
+        `https://${this.inputs.paas_packages}/-/user/org.couchdb.user:${username}`,
+        options
+      );
       const json = await response.json();
 
       if (response.status !== 201) {
@@ -141,45 +167,55 @@ class Action {
       }
 
       const { token } = json;
-      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `@kuzzleio:registry=https://${this.inputs.paas_packages}\n`);
-      fs.appendFileSync(`${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`, `//${this.inputs.paas_packages}/:_authToken=${token}\n`);
+      fs.appendFileSync(
+        `${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`,
+        `@kuzzleio:registry=https://${this.inputs.paas_packages}\n`
+      );
+      fs.appendFileSync(
+        `${process.env.GITHUB_WORKSPACE}/${this.inputs.npmrc_output_dir}/.npmrc`,
+        `//${this.inputs.paas_packages}/:_authToken=${token}\n`
+      );
     } catch (error) {
-      throw new Error(`Cannot login to the Kuzzle PaaS private NPM registry: ${error}`)
+      throw new Error(
+        `Cannot login to the Kuzzle PaaS private NPM registry: ${error}`
+      );
     }
   }
 
   async deploy(overrides = {}) {
-    let [name, tag] = this.inputs.image.split(':');
+    let [name, tag] = this.inputs.image.split(":");
 
     if (overrides.tag) {
       tag = overrides.tag;
     }
 
     const options = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.jwt}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.jwt}`,
       },
       body: JSON.stringify({
         image: {
           name,
-          tag
-        }
-      })
+          tag,
+        },
+      }),
     };
 
     try {
-      console.log(`Attempting to deploy '${name}:${tag}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`);
+      console.log(
+        `Attempting to deploy '${name}:${tag}' for '${this.inputs.application}' the application on the '${this.inputs.environment}' for the '${this.inputs.project}'`
+      );
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_deploy`,
-        options);
+        options
+      );
       const json = await response.json();
 
       if (json.status !== 200) {
         throw new Error(json.error.message);
       }
-
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
     }
@@ -187,17 +223,18 @@ class Action {
 
   async getApplicationInfo() {
     const options = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.jwt}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.jwt}`,
       },
     };
 
     try {
       const response = await fetch(
         `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}`,
-        options);
+        options
+      );
       const json = await response.json();
 
       if (json.status !== 200) {
@@ -206,36 +243,68 @@ class Action {
 
       return json.result;
     } catch (error) {
-      throw new Error(`Failed to fetch '${this.inputs.application}' application information: ${error}`);
+      throw new Error(
+        `Failed to fetch '${this.inputs.application}' application information: ${error}`
+      );
     }
   }
 
   async getApplicationLogs() {
     const options = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.jwt}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.jwt}`,
       },
     };
 
     try {
-      const response = await fetch(
-        `${this.inputs.paas_api}/_/projects/${this.inputs.project}/environments/${this.inputs.environment}/applications/${this.inputs.application}/_logs`,
-        options);
-      const json = await response.json();
+      const url = `${this.inputs.paas_api}/_query`;
 
-      if (json.status !== 200) {
-        throw new Error(json.error.message);
+      const { body } = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "logs",
+          controller: "application",
+          applicationId: this.inputs.application,
+          environmentId: this.inputs.environment,
+          projectId: this.inputs.project,
+        }),
+        headers: {
+          Authorization: `Bearer ${this.jwt}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      let isDone = false;
+      const streamLines = [];
+
+      while (!isDone) {
+        const { value, done } = await reader.read();
+
+        const chunk = new TextDecoder("utf-8").decode(value);
+
+        streamLines.push(...chunk.split("\n"));
+
+        if (done) {
+          isDone = true;
+        }
       }
 
-      return json.result.join('\n');
+      let result = "";
+
+      for (const streamLine of streamLines.filter(Boolean)) {
+        const parsed = JSON.parse(streamLine);
+
+        result += `${parsed.podName} | ${parsed.content} \n`;
+      }
     } catch (error) {
-      throw new Error(`Failed to fetch '${this.inputs.application}' application logs: ${error}`);
+      throw new Error(
+        `Failed to fetch '${this.inputs.application}' application logs: ${error}`
+      );
     }
   }
 }
-
 
 const action = new Action();
 
@@ -244,8 +313,3 @@ try {
 } catch (error) {
   core.setFailed(error);
 }
-
-
-
-
-
