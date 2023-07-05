@@ -277,7 +277,7 @@ class Action {
       });
 
       console.log(response);
-      const json = await response.json();
+      const json = await response.text();
 
       return json;
     } catch (error) {
