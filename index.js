@@ -261,7 +261,7 @@ class Action {
     try {
       const url = `${this.inputs.paas_api}/_query`;
 
-      const { body } = await fetch(url, {
+      const response = await fetch(url, {
         method: "POST",
         body: JSON.stringify({
           action: "logs",
@@ -276,40 +276,10 @@ class Action {
         },
       });
 
-      const reader = body.getReader();
+      console.log(body);
+      const json = await response.json();
 
-      let isDone = false;
-      const streamLines = [];
-
-      setTimeout(() => {
-        isDone = true;
-      }, 10000);
-
-      while (!isDone) {
-        const { value, done } = await reader.read();
-
-        console.log(value, done);
-
-        const chunk = new TextDecoder("utf-8").decode(value);
-
-        streamLines.push(...chunk.split("\n"));
-
-        if (done) {
-          isDone = true;
-        }
-      }
-
-      let result = "";
-
-      for (const streamLine of streamLines.filter(Boolean)) {
-        const parsed = JSON.parse(streamLine);
-
-        console.log("parsed", parsed);
-
-        result += `${parsed.podName} | ${parsed.content} \n`;
-      }
-
-      return result;
+      return json;
     } catch (error) {
       throw new Error(
         `Failed to fetch '${this.inputs.application}' application logs: ${error}`
