@@ -276,6 +276,8 @@ class Action {
         },
       });
 
+      const reader = body.getReader();
+
       let isDone = false;
       const streamLines = [];
 
