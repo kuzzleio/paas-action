@@ -250,14 +250,6 @@ class Action {
   }
 
   async getApplicationLogs() {
-    const options = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.jwt}`,
-      },
-    };
-
     try {
       const url = `${this.inputs.paas_api}/_query`;
 
@@ -276,10 +268,18 @@ class Action {
         },
       });
 
-      console.log(response);
-      const json = await response.text();
+      const text = await response.text();
 
-      return json;
+      const parsedText = text.split("\n").map((line) => {
+        try {
+          const json = JSON.parse(line);
+          return `${json.podName} ${json.content}`;
+        } catch (error) {
+          return line;
+        }
+      });
+
+      return parsedText.join("\n");
     } catch (error) {
       throw new Error(
         `Failed to fetch '${this.inputs.application}' application logs: ${error}`
