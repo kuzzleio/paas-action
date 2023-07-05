@@ -276,43 +276,40 @@ class Action {
         },
       });
 
-      console.log(body);
-      // const reader = body.getReader();
+      const reader = body.getReader();
 
-      // let isDone = false;
-      // const streamLines = [];
+      let isDone = false;
+      const streamLines = [];
 
-      // setTimeout(() => {
-      //   isDone = true;
-      // }, 10000);
+      setTimeout(() => {
+        isDone = true;
+      }, 10000);
 
-      // while (!isDone) {
-      //   const { value, done } = await reader.read();
+      while (!isDone) {
+        const { value, done } = await reader.read();
 
-      //   console.log(value, done);
+        console.log(value, done);
 
-      //   const chunk = new TextDecoder("utf-8").decode(value);
+        const chunk = new TextDecoder("utf-8").decode(value);
 
-      //   streamLines.push(...chunk.split("\n"));
+        streamLines.push(...chunk.split("\n"));
 
-      //   if (done) {
-      //     isDone = true;
-      //   }
-      // }
+        if (done) {
+          isDone = true;
+        }
+      }
 
-      // let result = "";
+      let result = "";
 
-      // for (const streamLine of streamLines.filter(Boolean)) {
-      //   const parsed = JSON.parse(streamLine);
+      for (const streamLine of streamLines.filter(Boolean)) {
+        const parsed = JSON.parse(streamLine);
 
-      //   console.log("parsed", parsed);
+        console.log("parsed", parsed);
 
-      //   result += `${parsed.podName} | ${parsed.content} \n`;
-      // }
+        result += `${parsed.podName} | ${parsed.content} \n`;
+      }
 
-      // return result;
-
-      return body;
+      return result;
     } catch (error) {
       throw new Error(
         `Failed to fetch '${this.inputs.application}' application logs: ${error}`
