@@ -87,7 +87,12 @@ class Action {
     } catch (error) {
       console.log("Deployment failed with the following error:\n");
       const logs = await this.getApplicationLogs();
-      logs.forEach(log => console.log(log));
+
+      if (Array.isArray(logs)) {
+        logs.forEach((log) => console.log(log));
+      } else {
+        console.log(logs);
+      }
 
       if (!this.inputs.rollback) {
         throw new Error(
