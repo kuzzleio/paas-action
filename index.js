@@ -8,38 +8,68 @@ function sleep(s) {
 
 class Action {
   constructor() {
-    const trim = { trimWhitespace: true };
     this.inputs = {
-      username: core.getInput("username", { required: true, ...trim }),
-      password: core.getInput("password", { required: true, ...trim }),
+      username: core.getInput("username", {
+        required: true,
+        trimWhitespace: true,
+      }),
+
+      password: core.getInput("password", {
+        required: true,
+        trimWhitespace: true,
+      }),
+
       project: `paas-project-${core.getInput("project", {
         required: false,
-        ...trim,
+        trimWhitespace: true,
       })}`,
-      environment: core.getInput("environment", { required: false, ...trim }),
-      application: core.getInput("application", { required: false, ...trim }),
-      image: core.getInput("image", { required: false, ...trim }),
+
+      environment: core.getInput("environment", {
+        required: false,
+        trimWhitespace: true,
+      }),
+
+      application: core.getInput("application", {
+        required: false,
+        trimWhitespace: true,
+      }),
+      image: core.getInput("image", { required: false, trimWhitespace: true }),
+
       login_only: core.getBooleanInput("login_only", {
         required: false,
-        ...trim,
+        trimWhitespace: true,
       }),
+
       npmrc_output_dir: core.getInput("npmrc_output_dir", {
         required: false,
-        ...trim,
+        trimWhitespace: true,
       }),
-      paas_api: core.getInput("paas_api", { required: false, ...trim }),
+
+      paas_api: core.getInput("paas_api", {
+        required: false,
+        trimWhitespace: true,
+      }),
+
       paas_packages: core.getInput("paas_packages", {
         required: false,
-        ...trim,
+        trimWhitespace: true,
       }),
-      rollback: core.getBooleanInput("rollback", { required: false, ...trim }),
-      timeout: parseInt(core.getInput("timeout", { required: false, ...trim })),
+
+      rollback: core.getBooleanInput("rollback", {
+        required: false,
+        trimWhitespace: true,
+      }),
+
+      timeout: parseInt(
+        core.getInput("timeout", { required: false, trimWhitespace: true })
+      ),
     };
   }
 
   async waitForApplication() {
     let status = "Processing";
     let tryCount = 0;
+
     while (status !== "Healthy" && tryCount < this.inputs.timeout) {
       const currentAppInfo = await this.getApplicationInfo();
       status = currentAppInfo.status;
@@ -78,9 +108,10 @@ class Action {
 
     await this.deploy();
 
-    await sleep(3); // Wait 10 seconds to let Argo the time to init the deployment process
+    await sleep(10); // Wait 10 seconds to let Argo the time to init the deployment process
 
-    let status = undefined;
+    let status;
+
     try {
       status = await this.waitForApplication();
       console.log("Deployment succeeded!");
@@ -107,7 +138,7 @@ class Action {
         tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag,
       });
 
-      status = await this.waitForApplication();
+      await this.waitForApplication();
 
       console.log("Rollback successful! 🥵");
 
