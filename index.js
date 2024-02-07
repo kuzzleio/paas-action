@@ -164,7 +164,7 @@ class Action {
       const json = await response.json();
 
       if (response.status !== 200) {
-        throw new Error(json.error);
+        throw new Error(json.error.message);
       }
 
       const { result } = json;
@@ -200,7 +200,7 @@ class Action {
       const json = await response.json();
 
       if (response.status !== 201) {
-        throw new Error(json.error);
+        throw new Error(json.error.message);
       }
 
       const { token } = json;
