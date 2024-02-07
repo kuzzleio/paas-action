@@ -170,7 +170,8 @@ class Action {
       const { result } = json;
       this.jwt = result.jwt;
     } catch (error) {
-      throw new Error(`Cannot login to the Kuzzle PaaS services: ${String(error)}`);
+      console.error(error);
+      throw new Error("Cannot login to the Kuzzle PaaS services");
     }
 
     /**
@@ -212,9 +213,8 @@ class Action {
         `//${this.inputs.paas_packages}/:_authToken=${token}\n`
       );
     } catch (error) {
-      throw new Error(
-        `Cannot login to the Kuzzle PaaS private NPM registry: ${error}`
-      );
+      console.error(error);
+      throw new Error("Cannot login to the Kuzzle PaaS private NPM registry");
     }
   }
 
