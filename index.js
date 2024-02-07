@@ -170,7 +170,7 @@ class Action {
       const { result } = json;
       this.jwt = result.jwt;
     } catch (error) {
-      throw new Error(`Cannot login to the Kuzzle PaaS services: ${error}`);
+      throw new Error(`Cannot login to the Kuzzle PaaS services: ${String(error)}`);
     }
 
     /**
