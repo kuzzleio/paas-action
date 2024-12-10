@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/kuzzleio/paas-action/compare/v1.2.1...v1.2.2) (2024-12-10)
+
+
+### Bug Fixes
+
+* Pass parameters properly to fn ([d36db08](https://github.com/kuzzleio/paas-action/commit/d36db08ce08f9123a52c4cf75714eab962a88d92))
+
 ## [1.2.1](https://github.com/kuzzleio/paas-action/compare/v1.2.0...v1.2.1) (2024-12-10)
 
 
