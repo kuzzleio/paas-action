@@ -8,18 +8,20 @@ This action provide the following functionality for Github Actions users:
 
 # Usage
 
-| Input            | default | Required |
-| ---------------- | ------- | -------- |
-| username         |         | true     |
-| password         |         | true     |
-| npmrc_output_dir | `.`     |          |
-| project          |         | true     |
-| environment      | main    |          |
-| application      | api     |          |
-| image            |         | true     |
-| login_only       | false   |          |
-| timeout          | `60`    |          |
-| rollback         | false   |          |
+| Input            | default                          | Required |
+| ---------------- | -------------------------------- | -------- |
+| username         |                                  | true     |
+| password         |                                  | true     |
+| project          |                                  | true     |
+| environment      | `main`                           |          |
+| application      | `api`                            |          |
+| image            |                                  | true     |
+| login_only       | `false`                          |          |
+| npmrc_output_dir | `.`                              |          |
+| paas_api         | `https://console.paas.kuzzle.io` |          |
+| paas_packages    | `packages.paas.kuzzle.io`        |          |
+| timeout          | `60`                             |          |
+| rollback         | `false`                          |          |
 
 > `project` is **Required** by default but not required if `login_only` is set to `true`.
 
