@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/kuzzleio/paas-action/compare/v1.2.0...v1.2.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* login should happen at the begining ([6df9f80](https://github.com/kuzzleio/paas-action/commit/6df9f804e9876dd125aa1952774f8d80ac3a82a7))
+
 # [1.2.0](https://github.com/kuzzleio/paas-action/compare/v1.1.0...v1.2.0) (2024-12-10)
 
 
