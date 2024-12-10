@@ -114,7 +114,7 @@ class Action {
     }
   }
 
-  async loginToNpmPrivateRegistry() {
+  async loginToNpmPrivateRegistry(username, password) {
     /**
      * Login to the Kuzzle PaaS private NPM registry
      */
