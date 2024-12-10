@@ -87,68 +87,7 @@ class Action {
     return status;
   }
 
-  async run() {
-    await this.login();
-
-    if (this.inputs.login_only) {
-      return;
-    }
-
-    if (!this.inputs.image) {
-      throw new Error(
-        `You're attempting to deploy but you didn't provide a Docker image name to do so.`
-      );
-    }
-
-    if (!this.inputs.project) {
-      throw new Error(`Project name required for deployment operations.`);
-    }
-
-    const previousAppInfo = await this.getApplicationInfo();
-
-    await this.deploy();
-
-    await sleep(10); // Wait 10 seconds to let Argo the time to init the deployment process
-
-    let status;
-
-    try {
-      status = await this.waitForApplication();
-      console.log("Deployment succeeded!");
-    } catch (error) {
-      console.log("Deployment failed with the following error:\n");
-      const logs = await this.getApplicationLogs();
-
-      if (Array.isArray(logs)) {
-        logs.forEach((log) => console.log(log));
-      } else {
-        console.log(logs);
-      }
-
-      if (!this.inputs.rollback) {
-        throw new Error(
-          `Application deployment errored with final status ${status}`
-        );
-      }
-      console.log(
-        `Rolling back to image ${previousAppInfo.spec.source.helm.values.kuzzle.image.name}:${previousAppInfo.spec.source.helm.values.kuzzle.image.tag}`
-      );
-
-      await this.deploy({
-        tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag,
-      });
-
-      await this.waitForApplication();
-
-      console.log("Rollback successful! 🥵");
-
-      process.exit(1); // To make the Github Action job mark as failed for Github
-    }
-  }
-
-  async login() {
-    const { username, password } = this.inputs;
-
+  async loginToPaas(username, password) {
     /**
      * Login to the Kuzzle PaaS API
      */
@@ -173,7 +112,9 @@ class Action {
       console.error(error);
       throw new Error("Cannot login to the Kuzzle PaaS services");
     }
+  }
 
+  async loginToNpmPrivateRegistry() {
     /**
      * Login to the Kuzzle PaaS private NPM registry
      */
@@ -197,6 +138,7 @@ class Action {
         `https://${this.inputs.paas_packages}/-/user/org.couchdb.user:${username}`,
         options
       );
+
       const json = await response.json();
 
       if (response.status !== 201) {
@@ -216,6 +158,13 @@ class Action {
       console.error(error);
       throw new Error("Cannot login to the Kuzzle PaaS private NPM registry");
     }
+  }
+
+  async login() {
+    const { username, password } = this.inputs;
+
+    await this.loginToPaas(username, password);
+    await this.loginToNpmPrivateRegistry(username, password);
   }
 
   async deploy(overrides = {}) {
@@ -254,6 +203,8 @@ class Action {
       }
     } catch (error) {
       throw new Error(`Deployment failed: ${error}`);
+    } finally {
+      await sleep(10);
     }
   }
 
@@ -285,49 +236,63 @@ class Action {
     }
   }
 
-  async getApplicationLogs() {
-    try {
-      const url = `${this.inputs.paas_api}/_query`;
+  async rollback() {
+    const previousAppInfo = await this.getApplicationInfo();
 
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "logs",
-          controller: "application",
-          applicationId: this.inputs.application,
-          environmentId: this.inputs.environment,
-          projectId: this.inputs.project,
-        }),
-        headers: {
-          Authorization: `Bearer ${this.jwt}`,
-          "Content-Type": "application/json",
-        },
-      });
+    console.log(
+      `Rolling back to image ${previousAppInfo.spec.source.helm.values.kuzzle.image.name}:${previousAppInfo.spec.source.helm.values.kuzzle.image.tag}`
+    );
 
-      const text = await response.text();
+    await this.deploy({
+      tag: previousAppInfo.spec.source.helm.values.kuzzle.image.tag,
+    });
 
-      const parsedText = text.split("\n").map((line) => {
-        try {
-          const json = JSON.parse(line);
-          return `${json.podName} ${json.content}`;
-        } catch (error) {
-          return line;
-        }
-      });
+    await this.waitForApplication();
+    console.log("Rollback successful! 🥵");
+  }
 
-      return parsedText.join("\n");
-    } catch (error) {
+  async run() {
+    if (!this.inputs.image) {
       throw new Error(
-        `Failed to fetch '${this.inputs.application}' application logs: ${error}`
+        `You're attempting to deploy but you didn't provide a Docker image name to do so.`
       );
+    }
+
+    if (!this.inputs.project) {
+      throw new Error(`Project name required for deployment operations.`);
+    }
+
+    await this.login();
+
+    if (this.inputs.login_only) {
+      return;
+    }
+
+    await this.deploy();
+
+    let status;
+
+    try {
+      status = await this.waitForApplication();
+      console.log("Deployment succeeded!");
+    } catch (error) {
+      console.log("Deployment failed!");
+
+      if (!this.inputs.rollback) {
+        throw new Error(
+          `Application deployment errored with final status ${status}`
+        );
+      }
+
+      this.rollback();
+
+      process.exit(1);
     }
   }
 }
 
-const action = new Action();
-
 try {
-  await action.run();
+  await new Action().run();
 } catch (error) {
   core.setFailed(error);
 }

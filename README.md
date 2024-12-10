@@ -1,55 +1,32 @@
 # Kuzzle PaaS Action
 
-## Inputs
+This action provide the following functionality for Github Actions users:
 
-## `username`
+- Login to Kuzzle PaaS and get access to our licensed products.
+- Deploy a new version of your application.
+- Rollback to the previous live version of the targeted application if the deployment fails.
 
-**Required** Your Kuzzle PaaS username.
+# Usage
 
-## `password`
+| Input            | default | Required |
+| ---------------- | ------- | -------- |
+| username         |         | true     |
+| password         |         | true     |
+| npmrc_output_dir | `.`     |          |
+| project          |         | true     |
+| environment      | main    |          |
+| application      | api     |          |
+| image            |         | true     |
+| login_only       | false   |          |
+| timeout          | `60`    |          |
+| rollback         | false   |          |
 
-**Required** Your Kuzzle PaaS password.
+> `project` is **Required** by default but not required if `login_only` is set to `true`.
 
-## `npmrc_output_dir`
-
-Where to save the produced .npmrc file when login (default: Project root directory).
-
-## `project`
-
-**Required** Your Kuzzle PaaS project name (not required if `login_only` is set to `true`).
-
-## `environment`
-
-Your Kuzzle PaaS project environment to target (default: `main`).
-
-## `application`
-
-The Kuzzle PaaS application name to update (default: `api`).
-
-## `image`
-
-**Required** The Docker image to use to perform the deploy (not required if `login_only` is set to `true`).
-
-## `login_only`
-
-If true, only the login action will be performed (default: `false`).
-
-## `timeout`
-
-The amount of time in second before a deployment can be considere as a failure (default: `60`).
-
-## `rollback`
-
-Allows you to perform a rollback to the previous live version of the targeted application (default: `false`).
-
-
-
-## Example usage
-
-### Login and get access to our licensed products (for functional test purposes for example):
+### Login and get access to our licensed products
 
 ```yaml
-uses: kuzzleio/paas-action@v1.1.0
+uses: kuzzleio/paas-action@v1.x.x
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -58,10 +35,10 @@ with:
   npmrc_output_dir: ./backend
 ```
 
-### Deploy a new version of your application on your Kuzzle PaaS environment:
+### Deploy a new version of your application
 
 ```yaml
-uses: kuzzleio/paas-action@v1.1.0
+uses: kuzzleio/paas-action@v1.x.x
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -69,15 +46,15 @@ with:
   environment: main
   application: api
   image: harbor.paas.kuzzle.io/my-project/main/api:my-tag
-  timeout: 45 
+  timeout: 45
 ```
 
-### Deploy a new version of your application on your Kuzzle PaaS environment and rollback if it fail:
+### Deploy a new version of your application and rollback if it fails
 
 > NOTE: It will rollback to the previous live version of the targeted application.
 
 ```yaml
-uses: kuzzleio/paas-action@v1.1.0
+uses: kuzzleio/paas-action@v1.x.x
 with:
   username: ${{ secrets.KUZZLE_PAAS_USERNAME }}
   password: ${{ secrets.KUZZLE_PAAS_PASSWORD }}
@@ -88,3 +65,7 @@ with:
   rollback: true
   timeout: 90
 ```
+
+# License
+
+The scripts and documentation in this project are released under the [MIT License](LICENSE)

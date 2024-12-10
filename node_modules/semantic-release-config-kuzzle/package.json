@@ -1,0 +1,47 @@
+{
+  "name": "semantic-release-config-kuzzle",
+  "version": "1.0.0",
+  "description": "The semantic-release shareable config we use for Kuzzle projects.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build tsconfig.json",
+    "lint": "eslint ./lib --ext .ts --config .eslintrc.json",
+    "lint:fix": "eslint ./lib --ext .ts --config .eslintrc.json --fix",
+    "prepare": "husky install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuzzleio/semantic-release-config-kuzzle.git"
+  },
+  "author": "The Kuzzle Team <support@kuzzle.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/kuzzleio/semantic-release-config-kuzzle/issues"
+  },
+  "homepage": "https://github.com/kuzzleio/semantic-release-config-kuzzle#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.6",
+    "@commitlint/config-conventional": "^17.6.6",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/release-notes-generator": "^11.0.1",
+    "@types/node": "^20.3.2",
+    "@types/semantic-release": "^20.0.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.43.0",
+    "eslint-plugin-kuzzle": "^0.0.6",
+    "husky": "^8.0.0",
+    "semantic-release": "^21.0.2",
+    "semantic-release-slack-bot": "^4.0.2",
+    "typescript": "^5.1.6"
+  },
+  "files": [
+    "CHANGELOG.md",
+    "dist/index.js",
+    "dist/index.js.map",
+    "dist/index.d.ts"
+  ]
+}
