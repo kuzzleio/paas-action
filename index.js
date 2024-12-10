@@ -252,6 +252,12 @@ class Action {
   }
 
   async run() {
+    await this.login();
+
+    if (this.inputs.login_only) {
+      return;
+    }
+
     if (!this.inputs.image) {
       throw new Error(
         `You're attempting to deploy but you didn't provide a Docker image name to do so.`
@@ -262,11 +268,6 @@ class Action {
       throw new Error(`Project name required for deployment operations.`);
     }
 
-    await this.login();
-
-    if (this.inputs.login_only) {
-      return;
-    }
 
     await this.deploy();
 
